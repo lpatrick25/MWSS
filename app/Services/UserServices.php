@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Hash;
+
+class UserServices
+{
+    public function getAllUsers(array $validated): Builder
+    {
+        return User::query()
+            ->when($validated['role'] ?? null, fn ($q) => $q->where('role', $validated['role']))
+            ->when($validated['status'] ?? null, fn ($q) => $q->where('status', $validated['status']));
+    }
+
+    public function create(array $data): User
+    {
+        $data['password'] = Hash::make($data['password']);
+        return User::create($data);
+    }
+
+    public function update(int $id, array $data): User
+    {
+        $user = User::findOrFail($id);
+        if (isset($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        }
+        $user->update($data);
+        return $user;
+    }
+}
