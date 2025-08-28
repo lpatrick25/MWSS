@@ -13,6 +13,7 @@ class TariffRateResource extends Resource
             'effective_date' => $this->effective_date,
             'min_consumption' => $this->min_consumption,
             'max_consumption' => $this->max_consumption,
+            'flat_amount' => $this->flat_amount,
             'rate_per_cubic_meter' => $this->rate_per_cubic_meter,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

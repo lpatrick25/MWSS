@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('tariff_rates', function (Blueprint $table) {
             $table->id();
-            $table->date('effective_date');
-            $table->integer('min_consumption');
-            $table->integer('max_consumption');
-            $table->decimal('rate_per_cubic_meter');
+            $table->date('effective_date'); // when this tariff takes effect
+            $table->integer('min_consumption'); // starting cubic meter of block
+            $table->integer('max_consumption')->nullable(); // null = no limit
+            $table->decimal('flat_amount', 8, 2)->default(0); // fixed block charge
+            $table->decimal('rate_per_cubic_meter', 8, 2)->default(0); // per cu.m. charge for this block
             $table->timestamps();
         });
     }

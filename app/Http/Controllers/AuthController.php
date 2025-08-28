@@ -6,6 +6,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -19,6 +20,8 @@ class AuthController extends Controller
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
             return response()->json(['error' => 'Invalid email or password'], 401);
         }
+
+        Auth::login($user);
 
         $token = $user->createToken('api-token')->plainTextToken;
 
@@ -36,8 +39,11 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
-
+        if ($request->user()) {
+            $request->user()->currentAccessToken()->delete();
+        } else {
+            auth()->logout();
+        }
         return $this->success(null, 'Logged out successfully');
     }
 }

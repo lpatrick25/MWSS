@@ -17,6 +17,8 @@ class StoreMeterRequest extends FormRequest
             'concessionaire_id' => 'required|exists:concessionaires,id',
             'meter_number' => 'required|string|unique:meters,meter_number|max:255',
             'installation_date' => 'required|date',
+            'service_address' => 'required|string|max:255',
+            'initial_reading' => 'required|integer|min:0',
             'status' => 'nullable|in:Active,Inactive',
         ];
     }

@@ -7,6 +7,7 @@ use App\Http\Requests\Payment\UpdatePaymentRequest;
 use App\Http\Resources\Payment\PaymentResource;
 use App\Http\Resources\Payment\PaymentCollection;
 use App\Models\Payment;
+use App\Services\BillingServices;
 use App\Services\PaymentServices;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,11 +15,13 @@ use Illuminate\Http\Request;
 class PaymentController extends Controller
 {
     protected $paymentService;
+    protected $billingService;
 
-    public function __construct(PaymentServices $paymentService, Request $request)
+    public function __construct(PaymentServices $paymentService, BillingServices $billingService, Request $request)
     {
         parent::__construct($request);
         $this->paymentService = $paymentService;
+        $this->billingService = $billingService;
     }
 
     public function index(Request $request): PaymentCollection
@@ -46,6 +49,7 @@ class PaymentController extends Controller
     public function store(StorePaymentRequest $request): JsonResponse
     {
         $payment = $this->paymentService->create($request->validated());
+        $this->billingService->updateBillingStatus($payment->bill_id, 'Paid');
         $payment->load('bill', 'collectedBy');
         return $this->success(new PaymentResource($payment), 'Payment created', 201);
     }

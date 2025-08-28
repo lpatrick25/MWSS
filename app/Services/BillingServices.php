@@ -18,6 +18,7 @@ class BillingServices
 
     public function create(array $data): Billing
     {
+        $data['bill_no'] = $data['billing_month'];
         return Billing::create($data);
     }
 
@@ -25,6 +26,13 @@ class BillingServices
     {
         $billing = Billing::findOrFail($id);
         $billing->update($data);
+        return $billing;
+    }
+
+    public function updateBillingStatus(int $id, string $status): Billing
+    {
+        $billing = Billing::findOrFail($id);
+        $billing->update(['status' => $status]);
         return $billing;
     }
 }

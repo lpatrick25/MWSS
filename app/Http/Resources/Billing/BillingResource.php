@@ -22,12 +22,12 @@ class BillingResource extends Resource
             'concessionaire' => $this->whenLoaded('concessionaire', fn () => [
                 'id' => $this->concessionaire->id,
                 'account_number' => $this->concessionaire->account_number,
-                'first_name' => $this->concessionaire->first_name,
-                'last_name' => $this->concessionaire->last_name,
+                'full_name' => $this->concessionaire->full_name,
             ]),
             'meter_reading' => $this->whenLoaded('meterReading', fn () => [
                 'id' => $this->meterReading->id,
                 'meter_id' => $this->meterReading->meter_id,
+                'meter_number' => $this->meterReading->meter->meter_number,
                 'previous_reading' => $this->meterReading->previous_reading,
                 'present_reading' => $this->meterReading->present_reading,
                 'consumption' => $this->meterReading->consumption,

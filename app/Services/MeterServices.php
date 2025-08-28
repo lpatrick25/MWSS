@@ -26,4 +26,15 @@ class MeterServices
         $meter->update($data);
         return $meter;
     }
+
+    public function updateStatus(int $id): Meter
+    {
+        $meter = Meter::findOrFail($id);
+        if ($meter->status === 'Inactive') {
+            $meter->update(['status' => 'Active']);
+            return $meter;
+        }
+        $meter->update(['status' => 'Inactive']);
+        return $meter;
+    }
 }

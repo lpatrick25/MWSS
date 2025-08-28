@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('middle_name')->nullable();
             $table->string('last_name');
             $table->string('extension_name')->nullable();
-            $table->string('service_address');
+            $table->string('address');
             $table->string('email')->unique();
             $table->string('phone_number')->unique();
             $table->enum('status', ['Active', 'Inactive'])->default('Active');

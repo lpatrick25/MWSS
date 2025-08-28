@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('bill_id')->constrained('billings')->cascadeOnDelete('restrict');
             $table->date('payment_date');
             $table->decimal('amount_paid');
+            $table->decimal('amount_change');
             $table->enum('payment_method', ['Cash', 'Online']);
             $table->string('payment_reference')->nullable();
             $table->foreignId('collected_by')->nullable()->constrained('users')->cascadeOnDelete('restrict');

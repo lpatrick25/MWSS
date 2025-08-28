@@ -15,6 +15,8 @@ class ConcessionaireServices
 
     public function create(array $data): Concessionaire
     {
+        $accountNumber = date('d-m') . '-' . str_pad((int) date('d-m') + 1, 5, '0', STR_PAD_LEFT);
+        $data['account_number'] = $accountNumber;
         return Concessionaire::create($data);
     }
 

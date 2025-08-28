@@ -16,8 +16,18 @@ class StoreTariffRateRequest extends FormRequest
         return [
             'effective_date' => 'required|date',
             'min_consumption' => 'required|integer|min:0',
-            'max_consumption' => 'required|integer|gt:min_consumption',
+            'max_consumption' => 'nullable|integer|min:0|gte:min_consumption',
+            'flat_amount' => 'required|numeric|min:0',
             'rate_per_cubic_meter' => 'required|numeric|min:0',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'max_consumption.gte' => 'The max consumption must be greater than or equal to the min consumption.',
+            'flat_amount.required' => 'The flat amount is required.',
+            'rate_per_cubic_meter.required' => 'The rate per cubic meter is required.',
         ];
     }
 }
