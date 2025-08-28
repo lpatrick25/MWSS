@@ -13,14 +13,15 @@ class Payment extends Model
         'bill_id',
         'payment_date',
         'amount_paid',
+        'amount_change',
         'payment_method',
         'payment_reference',
         'collected_by',
     ];
 
     protected $casts = [
-        'payment_date' => 'date',
         'amount_paid' => 'decimal:2',
+        'amount_change' => 'decimal:2',
         'payment_method' => 'string',
     ];
 

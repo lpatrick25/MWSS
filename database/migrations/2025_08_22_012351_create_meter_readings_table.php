@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('meter_readings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('meter_id')->constrained('meters')->cascadeOnDelete('restrict');
-            $table->foreignId('reader_id')->constrained('users')->cascadeOnDelete('restrict');
+            $table->foreignId('reader_id')->nullable()->constrained('users')->cascadeOnDelete('restrict');
             $table->date('reading_date');
             $table->integer('previous_reading');
             $table->integer('present_reading');

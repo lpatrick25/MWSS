@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\User\StoreUserRequest;
+use App\Http\Requests\User\UpdateUserPasswordRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\User\UserResource;
 use App\Http\Resources\User\UserCollection;
@@ -57,5 +58,17 @@ class UserController extends Controller
     {
         $user->delete();
         return $this->success(null, 'User deleted');
+    }
+
+    public function changePassword(UpdateUserPasswordRequest $request, User $user)
+    {
+        $user = $this->userService->changePassword($user->id, $request->validated());
+        return $this->success(new UserResource($user), 'User password updated');
+    }
+
+    public function changeStatus(User $user)
+    {
+        $user = $this->userService->changeStatus($user->id);
+        return $this->success(new UserResource($user), 'User status updated');
     }
 }

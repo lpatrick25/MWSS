@@ -17,6 +17,8 @@ class UpdateMeterRequest extends FormRequest
             'concessionaire_id' => 'sometimes|required|exists:concessionaires,id',
             'meter_number' => 'sometimes|required|string|unique:meters,meter_number,' . $this->meter->id . '|max:255',
             'installation_date' => 'sometimes|required|date',
+            'service_address' => 'sometimes|required|string|max:255',
+            'initial_reading' => 'sometimes|required|integer|min:0',
             'status' => 'sometimes|required|in:Active,Inactive',
         ];
     }

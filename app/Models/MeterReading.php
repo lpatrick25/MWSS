@@ -19,7 +19,6 @@ class MeterReading extends Model
     ];
 
     protected $casts = [
-        'reading_date' => 'date',
         'previous_reading' => 'integer',
         'present_reading' => 'integer',
         'consumption' => 'integer',

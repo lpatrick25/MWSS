@@ -14,6 +14,7 @@ class UserResource extends Resource
             'middle_name' => $this->middle_name,
             'last_name' => $this->last_name,
             'extension_name' => $this->extension_name,
+            'fullname' => $this->full_name,
             'phone_number' => $this->phone_number,
             'email' => $this->email,
             'email_verified_at' => $this->email_verified_at,

@@ -20,7 +20,6 @@ class Billing extends Model
     ];
 
     protected $casts = [
-        'due_date' => 'date',
         'amount_due' => 'decimal:2',
         'status' => 'string',
     ];

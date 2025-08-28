@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Support\Traits\HasFullNameTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Concessionaire extends Model
 {
-    use HasFactory;
+    use HasFactory, HasFullNameTrait;
 
     protected $fillable = [
         'account_number',
@@ -15,7 +16,7 @@ class Concessionaire extends Model
         'middle_name',
         'last_name',
         'extension_name',
-        'service_address',
+        'address',
         'email',
         'phone_number',
         'status',

@@ -13,11 +13,12 @@ class Meter extends Model
         'concessionaire_id',
         'meter_number',
         'installation_date',
+        'service_address',
+        'initial_reading',
         'status',
     ];
 
     protected $casts = [
-        'installation_date' => 'date',
         'status' => 'string',
     ];
 

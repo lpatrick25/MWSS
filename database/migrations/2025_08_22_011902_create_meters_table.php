@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('concessionaire_id')->constrained('concessionaires')->onDelete('restrict');
             $table->string('meter_number')->unique();
             $table->date('installation_date');
+            $table->string('service_address');
+            $table->integer('initial_reading');
             $table->enum('status', ['Active', 'Inactive'])->default('Active');
             $table->timestamps();
         });

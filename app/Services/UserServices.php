@@ -10,7 +10,7 @@ class UserServices
 {
     public function getAllUsers(array $validated): Builder
     {
-        return User::query()
+        return User::where('role', '!=', "Admin")
             ->when($validated['role'] ?? null, fn ($q) => $q->where('role', $validated['role']))
             ->when($validated['status'] ?? null, fn ($q) => $q->where('status', $validated['status']));
     }
@@ -28,6 +28,30 @@ class UserServices
             $data['password'] = Hash::make($data['password']);
         }
         $user->update($data);
+        return $user;
+    }
+
+    public function changePassword(int $id, array $data): User
+    {
+        $user = User::findOrFail($id);
+        if (isset($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        }
+        $user->update($data);
+        return $user;
+    }
+
+    public function changeStatus(int $id): User
+    {
+        $user = User::findOrFail($id);
+
+        if ($user->status === 'Active') {
+            $user->status = 'Inactive';
+        } else {
+             $user->status = 'Active';
+        }
+
+        $user->save();
         return $user;
     }
 }
