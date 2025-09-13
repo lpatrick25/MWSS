@@ -10,6 +10,7 @@ use App\Models\Billing;
 use App\Services\BillingServices;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class BillingController extends Controller
 {
@@ -45,6 +46,7 @@ class BillingController extends Controller
 
     public function store(StoreBillingRequest $request): JsonResponse
     {
+        Log::info('Creating billing record', $request->validated());
         $billing = $this->billingService->create($request->validated());
         $billing->load('concessionaire', 'meterReading');
         return $this->success(new BillingResource($billing), 'Billing created', 201);

@@ -44,6 +44,7 @@
             <form id="addForm" class="modal-content">
                 <div class="modal-header">
                     <h3 class="modal-title">Add New Concessionaire</h3>
+                    <button type="button" class="close text-dark" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -115,7 +116,7 @@
                     </div>
                 </div>
                 <div class="modal-footer text-right">
-                    <button class="btn btn-md btn-primary">Submit</button>
+                    <button class="btn btn-md btn-primary">Save</button>
                     <button class="btn btn-md btn-danger" data-dismiss="modal">Cancel</button>
                 </div>
             </form>
@@ -126,6 +127,7 @@
             <form id="updateForm" class="modal-content">
                 <div class="modal-header">
                     <h3 class="modal-title">Update Concessionaire</h3>
+                    <button type="button" class="close text-dark" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -197,7 +199,7 @@
                     </div>
                 </div>
                 <div class="modal-footer text-right">
-                    <button class="btn btn-md btn-primary">Submit</button>
+                    <button class="btn btn-md btn-primary">Save</button>
                     <button class="btn btn-md btn-danger" data-dismiss="modal">Cancel</button>
                 </div>
             </form>
@@ -228,8 +230,8 @@
                 <button class="btn btn-sm btn-primary me-1" onclick="editData(${row.id})" title="Edit">
                     <i class="bi bi-pencil"></i>
                 </button>
-                <button class="btn btn-sm btn-danger me-1" onclick="deleteData(${row.id})" title="Delete">
-                    <i class="bi bi-trash"></i>
+                <button class="btn btn-sm btn-danger me-1" onclick="statusData(${row.id})" title="Status">
+                    <i class="bi bi-person-x"></i>
                 </button>
             `;
         }
@@ -263,8 +265,48 @@
             });
         }
 
+        function statusData(id) {
+            Swal.fire({
+            title: 'Change Status?',
+            text: "Are you sure you want to change the status of this concessionaire?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Change',
+            cancelButtonText: 'Cancel'
+            }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                method: 'PUT',
+                url: `/concessionaires/${id}/changeStatus`,
+                dataType: 'JSON',
+                cache: false,
+                success: function(response) {
+                    $('#table').bootstrapTable('refresh');
+                    toastr.success(response.message);
+                },
+                error: function(xhr) {
+                    let message = 'Error changing status.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                    }
+                    toastr.error(message);
+                }
+                });
+            }
+            });
+        }
+
         function deleteData(id) {
-            $.ajax({
+            Swal.fire({
+            title: 'Delete Concessionaire?',
+            text: "Are you sure you want to delete this concessionaire?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel'
+            }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
                 method: 'DELETE',
                 url: `/concessionaires/${id}`,
                 dataType: 'JSON',
@@ -276,10 +318,12 @@
                 error: function(xhr) {
                     let message = 'Error deleting concessionaire.';
                     if (xhr.responseJSON && xhr.responseJSON.message) {
-                        message = xhr.responseJSON.message;
+                    message = xhr.responseJSON.message;
                     }
                     toastr.error(message);
                 }
+                });
+            }
             });
         }
 
@@ -339,44 +383,55 @@
             $('#addForm').submit(function(event) {
                 event.preventDefault();
 
-                $.ajax({
-                    method: 'POST',
-                    url: '{{ route('concessionaires.store') }}',
-                    data: $('#addForm').serialize(),
-                    dataType: 'JSON',
-                    cache: false,
-                    success: function(response) {
-                        $('#addModal').modal('hide');
-                        $('#table').bootstrapTable('refresh');
-                        $('#addForm').trigger('reset');
-                        toastr.success(response.message);
-                    },
-                    error: function(xhr) {
-                        let response;
-                        try {
-                            response = JSON.parse(xhr.responseText);
-                            toastr.error('Error adding concessionaire: ' + (response
-                                .message || 'An unknown error occurred.'));
-                            if (response.errors) {
-                                for (const field in response.errors) {
-                                    const messages = response.errors[field];
-                                    if (messages.length > 0) {
-                                        const input = $(
-                                            `#addForm [name="${field}"]`
-                                        );
-                                        input.addClass('is-invalid');
-                                        input.closest('.form-group').find(
-                                            'span.invalid-feedback').remove();
-                                        const error = $(
-                                            '<span class="invalid-feedback"></span>'
-                                        ).text(messages[0]);
-                                        input.closest('.form-group').append(error);
+                Swal.fire({
+                    title: 'Add Concessionaire?',
+                    text: "Are you sure you want to add this concessionaire?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Save',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            method: 'POST',
+                            url: '{{ route('concessionaires.store') }}',
+                            data: $('#addForm').serialize(),
+                            dataType: 'JSON',
+                            cache: false,
+                            success: function(response) {
+                                $('#addModal').modal('hide');
+                                $('#table').bootstrapTable('refresh');
+                                $('#addForm').trigger('reset');
+                                toastr.success(response.message);
+                            },
+                            error: function(xhr) {
+                                let response;
+                                try {
+                                    response = JSON.parse(xhr.responseText);
+                                    toastr.error('Error adding concessionaire: ' + (response
+                                        .message || 'An unknown error occurred.'));
+                                    if (response.errors) {
+                                        for (const field in response.errors) {
+                                            const messages = response.errors[field];
+                                            if (messages.length > 0) {
+                                                const input = $(
+                                                    `#addForm [name="${field}"]`
+                                                );
+                                                input.addClass('is-invalid');
+                                                input.closest('.form-group').find(
+                                                    'span.invalid-feedback').remove();
+                                                const error = $(
+                                                    '<span class="invalid-feedback"></span>'
+                                                ).text(messages[0]);
+                                                input.closest('.form-group').append(error);
+                                            }
+                                        }
                                     }
+                                } catch (e) {
+                                    toastr.error('Error parsing server response.');
                                 }
                             }
-                        } catch (e) {
-                            toastr.error('Error parsing server response.');
-                        }
+                        });
                     }
                 });
             });
@@ -384,44 +439,55 @@
             $('#updateForm').submit(function(event) {
                 event.preventDefault();
 
-                $.ajax({
-                    method: 'PUT',
-                    url: `/concessionaires/${dataId}`,
-                    data: $('#updateForm').serialize(),
-                    dataType: 'JSON',
-                    cache: false,
-                    success: function(response) {
-                        $('#updateModal').modal('hide');
-                        $('#table').bootstrapTable('refresh');
-                        $('#updateForm').trigger('reset');
-                        toastr.success(response.message);
-                    },
-                    error: function(xhr) {
-                        let response;
-                        try {
-                            response = JSON.parse(xhr.responseText);
-                            toastr.error('Error updating concessionaire: ' + (response
-                                .message || 'An unknown error occurred.'));
-                            if (response.errors) {
-                                for (const field in response.errors) {
-                                    const messages = response.errors[field];
-                                    if (messages.length > 0) {
-                                        const input = $(
-                                            `#updateForm [name="${field}"]`
-                                        );
-                                        input.addClass('is-invalid');
-                                        input.closest('.form-group').find(
-                                            'span.invalid-feedback').remove();
-                                        const error = $(
-                                            '<span class="invalid-feedback"></span>'
-                                        ).text(messages[0]);
-                                        input.closest('.form-group').append(error);
+                Swal.fire({
+                    title: 'Update Concessionaire?',
+                    text: "Are you sure you want to update this concessionaire?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Update',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            method: 'PUT',
+                            url: `/concessionaires/${dataId}`,
+                            data: $('#updateForm').serialize(),
+                            dataType: 'JSON',
+                            cache: false,
+                            success: function(response) {
+                                $('#updateModal').modal('hide');
+                                $('#table').bootstrapTable('refresh');
+                                $('#updateForm').trigger('reset');
+                                toastr.success(response.message);
+                            },
+                            error: function(xhr) {
+                                let response;
+                                try {
+                                    response = JSON.parse(xhr.responseText);
+                                    toastr.error('Error updating concessionaire: ' + (response
+                                        .message || 'An unknown error occurred.'));
+                                    if (response.errors) {
+                                        for (const field in response.errors) {
+                                            const messages = response.errors[field];
+                                            if (messages.length > 0) {
+                                                const input = $(
+                                                    `#updateForm [name="${field}"]`
+                                                );
+                                                input.addClass('is-invalid');
+                                                input.closest('.form-group').find(
+                                                    'span.invalid-feedback').remove();
+                                                const error = $(
+                                                    '<span class="invalid-feedback"></span>'
+                                                ).text(messages[0]);
+                                                input.closest('.form-group').append(error);
+                                            }
+                                        }
                                     }
+                                } catch (e) {
+                                    toastr.error('Error parsing server response.');
                                 }
                             }
-                        } catch (e) {
-                            toastr.error('Error parsing server response.');
-                        }
+                        });
                     }
                 });
             });

@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('meter_number')->unique();
             $table->date('installation_date');
             $table->string('service_address');
-            $table->integer('initial_reading');
             $table->enum('status', ['Active', 'Inactive'])->default('Active');
             $table->timestamps();
         });

@@ -17,7 +17,8 @@ return new class extends Migration
             $table->foreignId('concessionaire_id')->constrained('concessionaires')->cascadeOnDelete('restrict');
             $table->foreignId('meter_reading_id')->constrained('meter_readings')->cascadeOnDelete('restrict');
             $table->string('billing_month');
-            $table->date('due_date');
+            $table->date('payment_deadline');
+            $table->date('disconnection_date');
             $table->decimal('amount_due', 10,2);
             $table->enum('status', ['Pending', 'Paid', 'Overdue']);
             $table->timestamps();

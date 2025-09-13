@@ -18,7 +18,8 @@ class ReadingBillingResource extends Resource
             'consumption' => $this->consumption,
             'bill_no' => $this->billing->bill_no,
             'amount_due' => $this->billing->amount_due,
-            'due_date' => $this->billing->due_date,
+            'payment_deadline' => $this->billing->payment_deadline,
+            'disconnection_date' => $this->billing->disconnection_date,
             'status' => $this->billing->status,
             'meter' => $this->whenLoaded('meter', fn () => [
                 'id' => $this->meter->id,

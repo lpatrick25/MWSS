@@ -3,7 +3,7 @@
 @section('active-concessionaire-menu')
     active active-menu
 @endsection
-@section('active-concessionaire-bill')
+@section('active-concessionaire-meter')
     active active-menu
 @endsection
 @section('APP-CONTENT')
@@ -55,7 +55,7 @@
                             <th data-field="consumption">Consumption</th>
                             <th data-field="reading_date">Reading Date</th>
                             <th data-field="amount_due">Amount Due</th>
-                            <th data-field="due_date">Due Date</th>
+                            <th data-field="payment_deadline">Due Date</th>
                             <th data-field="status" data-formatter="getStatusFormatter">Status</th>
                             <th data-field="action" data-formatter="getActionFormatter">Action</th>
                         </tr>
@@ -68,8 +68,8 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form id="addForm">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title">Add Meter Reading & Billing</h5>
+                    <div class="modal-header bg-primary">
+                        <h5 class="modal-title text-white">Add Meter Reading & Billing</h5>
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
                     </div>
 
@@ -103,14 +103,21 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Due Date</label>
-                            <input type="date" class="form-control" name="due_date" id="due_date" required>
+                            <label>Payment Deadline</label>
+                            <input type="date" class="form-control" name="payment_deadline" id="payment_deadline"
+                                required readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Disconnection Deadline</label>
+                            <input type="date" class="form-control" name="disconnection_date" id="disconnection_date"
+                                required readonly>
                         </div>
 
                         <div class="form-group">
                             <label>Amount Due</label>
                             <input type="number" step="0.01" class="form-control amount_due" name="amount_due"
-                                id="amount_due" required>
+                                id="amount_due" required readonly>
                         </div>
                     </div>
 
@@ -126,8 +133,8 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form id="updateForm">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title">Update Meter Reading & Billing</h5>
+                    <div class="modal-header bg-primary">
+                        <h5 class="modal-title text-white">Update Meter Reading & Billing</h5>
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
                     </div>
 
@@ -161,14 +168,21 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Due Date</label>
-                            <input type="date" class="form-control" name="due_date" id="due_date" required>
+                            <label>Payment Deadline</label>
+                            <input type="date" class="form-control" name="payment_deadline" id="payment_deadline"
+                                required readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Disconnection Deadline</label>
+                            <input type="date" class="form-control" name="disconnection_date" id="disconnection_date"
+                                required readonly>
                         </div>
 
                         <div class="form-group">
                             <label>Amount Due</label>
                             <input type="number" step="0.01" class="form-control amount_due" name="amount_due"
-                                id="amount_due" required>
+                                id="amount_due" required readonly>
                         </div>
                     </div>
 
@@ -224,7 +238,7 @@
                     $('#updateForm [name="present_reading"]').val(data.present_reading);
                     $('#updateForm [name="reading_date"]').val(data.reading_date);
                     $('#updateForm [name="billing_month"]').val(data.bill_no);
-                    $('#updateForm [name="due_date"]').val(data.due_date);
+                    $('#updateForm [name="payment_deadline"]').val(data.payment_deadline);
                     $('#updateForm [name="amount_due"]').val(data.amount_due);
                     dataId = id;
                     $('#updateModal').modal('show');
@@ -236,17 +250,30 @@
         }
 
         function updateStatus(meterID) {
-            $.ajax({
-                url: `/meters/${meterID}/status`,
-                method: "PUT",
-                success: function(res) {
-                    toastr.success("Status updated successfully");
-                    setTimeout(() => {
-                        location.reload();
-                    }, 500);
-                },
-                error: function(xhr) {
-                    toastr.error("Error updating status: " + (xhr.responseText || "Unknown error"));
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to update the meter status?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Change'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: `/meters/${meterID}/status`,
+                        method: "PUT",
+                        success: function(res) {
+                            toastr.success("Status updated successfully");
+                            setTimeout(() => {
+                                location.reload();
+                            }, 500);
+                        },
+                        error: function(xhr) {
+                            toastr.error("Error updating status: " + (xhr.responseText ||
+                                "Unknown error"));
+                        }
+                    });
                 }
             });
         }
@@ -328,47 +355,84 @@
                 }
             });
 
+            $('#present_reading').on('input', function() {
+                var previousReading = parseInt($('#previous_reading').val());
+                var presentReading = parseInt($(this).val());
+
+                if (!isNaN(previousReading) && !isNaN(presentReading) && presentReading >=
+                    previousReading) {
+                    var consumption = presentReading - previousReading;
+                    var dueDate = new Date();
+                    var disconnectionDate = new Date();
+                    dueDate.setDate(dueDate.getDate() + 5);
+                    disconnectionDate.setDate(disconnectionDate.getDate() + 10);
+                    var formattedDueDate = dueDate.toISOString().split('T')[0];
+                    $('#payment_deadline').val(formattedDueDate);
+                    var formattedDisconnectionDate = disconnectionDate.toISOString().split('T')[0];
+                    $('#disconnection_date').val(formattedDisconnectionDate);
+                } else {
+                    $('#payment_deadline').val('');
+                    $('#disconnection_date').val('');
+                }
+            });
+
             $('#addForm').submit(function(event) {
                 event.preventDefault();
 
-                $.ajax({
-                    method: 'POST',
-                    url: '{{ route('readingBilling.store') }}',
-                    data: $('#addForm').serialize(),
-                    dataType: 'JSON',
-                    cache: false,
-                    success: function(response) {
-                        $('#addModal').modal('hide');
-                        $('#table').bootstrapTable('refresh');
-                        $('#addForm').trigger('reset');
-                        toastr.success(response.message);
-                    },
-                    error: function(xhr) {
-                        let response;
-                        try {
-                            response = JSON.parse(xhr.responseText);
-                            toastr.error('Error adding reading & billing: ' + (response
-                                .message || 'An unknown error occurred.'));
-                            if (response.errors) {
-                                for (const field in response.errors) {
-                                    const messages = response.errors[field];
-                                    if (messages.length > 0) {
-                                        const input = $(
-                                            `#addForm [name="${field}"]`
-                                        );
-                                        input.addClass('is-invalid');
-                                        input.closest('.form-group').find(
-                                            'span.invalid-feedback').remove();
-                                        const error = $(
-                                            '<span class="invalid-feedback"></span>'
-                                        ).text(messages[0]);
-                                        input.closest('.form-group').append(error);
+                Swal.fire({
+                    title: 'Add Meter Reading & Billing?',
+                    text: "Are you sure you want to add this record?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Save'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            method: 'POST',
+                            url: '{{ route('readingBilling.store') }}',
+                            data: $('#addForm').serialize(),
+                            dataType: 'JSON',
+                            cache: false,
+                            success: function(response) {
+                                $('#addModal').modal('hide');
+                                $('#table').bootstrapTable('refresh');
+                                $('#addForm').trigger('reset');
+                                toastr.success(response.message);
+                            },
+                            error: function(xhr) {
+                                let response;
+                                try {
+                                    response = JSON.parse(xhr.responseText);
+                                    toastr.error('Error adding reading & billing: ' + (
+                                        response
+                                        .message || 'An unknown error occurred.'
+                                        ));
+                                    if (response.errors) {
+                                        for (const field in response.errors) {
+                                            const messages = response.errors[field];
+                                            if (messages.length > 0) {
+                                                const input = $(
+                                                    `#addForm [name="${field}"]`
+                                                );
+                                                input.addClass('is-invalid');
+                                                input.closest('.form-group').find(
+                                                    'span.invalid-feedback')
+                                                .remove();
+                                                const error = $(
+                                                    '<span class="invalid-feedback"></span>'
+                                                ).text(messages[0]);
+                                                input.closest('.form-group').append(
+                                                    error);
+                                            }
+                                        }
                                     }
+                                } catch (e) {
+                                    toastr.error('Error parsing server response.');
                                 }
                             }
-                        } catch (e) {
-                            toastr.error('Error parsing server response.');
-                        }
+                        });
                     }
                 });
             });
@@ -376,44 +440,61 @@
             $('#updateForm').submit(function(event) {
                 event.preventDefault();
 
-                $.ajax({
-                    method: 'PUT',
-                    url: '/readingBilling/{meterReading}'.replace('{meterReading}', dataId),
-                    data: $('#updateForm').serialize(),
-                    dataType: 'JSON',
-                    cache: false,
-                    success: function(response) {
-                        $('#updateModal').modal('hide');
-                        $('#table').bootstrapTable('refresh');
-                        $('#updateForm').trigger('reset');
-                        toastr.success(response.message);
-                    },
-                    error: function(xhr) {
-                        let response;
-                        try {
-                            response = JSON.parse(xhr.responseText);
-                            toastr.error('Error updating reading & billing: ' + (response
-                                .message || 'An unknown error occurred.'));
-                            if (response.errors) {
-                                for (const field in response.errors) {
-                                    const messages = response.errors[field];
-                                    if (messages.length > 0) {
-                                        const input = $(
-                                            `#updateForm [name="${field}"]`
-                                        );
-                                        input.addClass('is-invalid');
-                                        input.closest('.form-group').find(
-                                            'span.invalid-feedback').remove();
-                                        const error = $(
-                                            '<span class="invalid-feedback"></span>'
-                                        ).text(messages[0]);
-                                        input.closest('.form-group').append(error);
+                Swal.fire({
+                    title: 'Update Meter Reading & Billing?',
+                    text: "Are you sure you want to update this record?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Update'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            method: 'PUT',
+                            url: '/readingBilling/{meterReading}'.replace('{meterReading}',
+                                dataId),
+                            data: $('#updateForm').serialize(),
+                            dataType: 'JSON',
+                            cache: false,
+                            success: function(response) {
+                                $('#updateModal').modal('hide');
+                                $('#table').bootstrapTable('refresh');
+                                $('#updateForm').trigger('reset');
+                                toastr.success(response.message);
+                            },
+                            error: function(xhr) {
+                                let response;
+                                try {
+                                    response = JSON.parse(xhr.responseText);
+                                    toastr.error('Error updating reading & billing: ' +
+                                        (response
+                                            .message || 'An unknown error occurred.'
+                                            ));
+                                    if (response.errors) {
+                                        for (const field in response.errors) {
+                                            const messages = response.errors[field];
+                                            if (messages.length > 0) {
+                                                const input = $(
+                                                    `#updateForm [name="${field}"]`
+                                                );
+                                                input.addClass('is-invalid');
+                                                input.closest('.form-group').find(
+                                                    'span.invalid-feedback')
+                                                .remove();
+                                                const error = $(
+                                                    '<span class="invalid-feedback"></span>'
+                                                ).text(messages[0]);
+                                                input.closest('.form-group').append(
+                                                    error);
+                                            }
+                                        }
                                     }
+                                } catch (e) {
+                                    toastr.error('Error parsing server response.');
                                 }
                             }
-                        } catch (e) {
-                            toastr.error('Error parsing server response.');
-                        }
+                        });
                     }
                 });
             });

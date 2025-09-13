@@ -28,7 +28,7 @@
                             <th data-field="concessionaire.full_name">Concessionaire</th>
                             <th data-field="meter_reading.meter_number">Meter Number</th>
                             <th data-field="billing_month">Billing Month</th>
-                            <th data-field="due_date">Due Date</th>
+                            <th data-field="payment_deadline">Due Date</th>
                             <th data-field="amount_due">Amount Due</th>
                             <th data-field="status">Status</th>
                             <th data-field="action" data-formatter="getActionFormatter">Action</th>
@@ -60,7 +60,7 @@
                         <p><strong>Account Number:</strong> <span id="account_number"></span></p>
                         <p><strong>Meter Number:</strong> <span id="meter_number"></span></p>
                         <p><strong>Consumption:</strong> <span id="consumption"></span> m³</p>
-                        <p><strong>Due Date:</strong> <span id="due_date"></span></p>
+                        <p><strong>Due Date:</strong> <span id="payment_deadline"></span></p>
                     </div>
 
                     <!-- Payment Inputs -->
@@ -125,28 +125,41 @@
             $('#account_number').text(row.concessionaire.account_number);
             $('#meter_number').text(row.meter_reading.meter_number);
             $('#consumption').text(row.meter_reading.consumption);
-            $('#due_date').text(row.due_date);
+            $('#payment_deadline').text(row.payment_deadline);
 
             // show modal
             $('#addModal').modal('show');
         }
 
         function deleteData(id) {
-            $.ajax({
-                method: 'DELETE',
-                url: `/billings/${id}`,
-                dataType: 'JSON',
-                cache: false,
-                success: function(response) {
-                    $('#table').bootstrapTable('refresh');
-                    toastr.success(response.message);
-                },
-                error: function(xhr) {
-                    let message = 'Error deleting billing.';
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        message = xhr.responseJSON.message;
-                    }
-                    toastr.error(message);
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This action cannot be undone.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Save',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        method: 'DELETE',
+                        url: `/billings/${id}`,
+                        dataType: 'JSON',
+                        cache: false,
+                        success: function(response) {
+                            $('#table').bootstrapTable('refresh');
+                            toastr.success(response.message);
+                        },
+                        error: function(xhr) {
+                            let message = 'Error deleting billing.';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                message = xhr.responseJSON.message;
+                            }
+                            toastr.error(message);
+                        }
+                    });
                 }
             });
         }
@@ -218,42 +231,58 @@
                     return; // stop form submission
                 }
 
-                $.ajax({
-                    method: 'POST',
-                    url: '{{ route('payments.store') }}',
-                    data: $(this).serialize(),
-                    dataType: 'JSON',
-                    cache: false,
-                    success: function(response) {
-                        $('#addModal').modal('hide');
-                        $('#table').bootstrapTable('refresh');
-                        $('#addForm').trigger('reset');
-                        toastr.success(response.message);
-                    },
-                    error: function(xhr) {
-                        let response;
-                        try {
-                            response = JSON.parse(xhr.responseText);
-                            toastr.error('Error adding payment: ' + (response.message ||
-                                'An unknown error occurred.'));
-                            if (response.errors) {
-                                for (const field in response.errors) {
-                                    const messages = response.errors[field];
-                                    if (messages.length > 0) {
-                                        const input = $(`#addForm [name="${field}"]`);
-                                        input.addClass('is-invalid');
-                                        input.closest('.form-group').find(
-                                            'span.invalid-feedback').remove();
-                                        const error = $(
-                                            '<span class="invalid-feedback"></span>').text(
-                                            messages[0]);
-                                        input.closest('.form-group').append(error);
+                Swal.fire({
+                    title: 'Confirm Payment',
+                    text: 'Are you sure you want to submit this payment?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Save',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            method: 'POST',
+                            url: '{{ route('payments.store') }}',
+                            data: $(this).serialize(),
+                            dataType: 'JSON',
+                            cache: false,
+                            success: function(response) {
+                                $('#addModal').modal('hide');
+                                $('#table').bootstrapTable('refresh');
+                                $('#addForm').trigger('reset');
+                                toastr.success(response.message);
+                            },
+                            error: function(xhr) {
+                                let response;
+                                try {
+                                    response = JSON.parse(xhr.responseText);
+                                    toastr.error('Error adding payment: ' + (response
+                                        .message ||
+                                        'An unknown error occurred.'));
+                                    if (response.errors) {
+                                        for (const field in response.errors) {
+                                            const messages = response.errors[field];
+                                            if (messages.length > 0) {
+                                                const input = $(
+                                                    `#addForm [name="${field}"]`);
+                                                input.addClass('is-invalid');
+                                                input.closest('.form-group').find(
+                                                    'span.invalid-feedback')
+                                                .remove();
+                                                const error = $(
+                                                    '<span class="invalid-feedback"></span>'
+                                                    ).text(
+                                                    messages[0]);
+                                                input.closest('.form-group').append(
+                                                    error);
+                                            }
+                                        }
                                     }
+                                } catch (e) {
+                                    toastr.error('Error parsing server response.');
                                 }
                             }
-                        } catch (e) {
-                            toastr.error('Error parsing server response.');
-                        }
+                        });
                     }
                 });
             });

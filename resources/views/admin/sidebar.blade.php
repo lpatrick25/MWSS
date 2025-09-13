@@ -20,28 +20,28 @@
     <a href="#concessionaireInfo" class="iq-waves-effect" data-toggle="collapse" aria-expanded="false">
         <span class="ripple rippleEffect"></span>
         <i class="bi bi-person-workspace iq-arrow-left"></i>
-        <span>Concessionaire</span>
+        <span>Consumer</span>
         <i class="bi bi-chevron-right iq-arrow-right"></i>
     </a>
     <ul id="concessionaireInfo" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
         <li class="@yield('active-concessionaire-list')">
             <a href="{{ route('admin.concessionaireList') }}">
-                <i class="bi bi-card-list"></i>Concessionaire List
+                <i class="bi bi-card-list"></i>Consumer List
             </a>
         </li>
         <li class="@yield('active-concessionaire-meter')">
             <a href="{{ route('admin.concessionaireMeter') }}">
-                <i class="bi bi-pencil-square"></i>Concessionaire Meter
+                <i class="bi bi-pencil-square"></i>Consumer Meter
             </a>
         </li>
-        <li class="@yield('active-concessionaire-bill')">
+        {{-- <li class="@yield('active-concessionaire-bill')">
             <a href="{{ route('admin.concessionaireMeterBill') }}">
-                <i class="bi bi-receipt"></i>Concessionaire Meter Bill
+                <i class="bi bi-receipt"></i>Consumer Meter Bill
             </a>
-        </li>
+        </li> --}}
         <li class="@yield('active-concessionaire-billing')">
             <a href="{{ route('admin.concessionaireBilling') }}">
-                <i class="bi bi-cash-coin"></i>Concessionaire Billing
+                <i class="bi bi-cash-coin"></i>Consumer Billing
             </a>
         </li>
     </ul>

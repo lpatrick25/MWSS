@@ -79,13 +79,13 @@
                 return '<span class="text-muted">No actions available</span>';
             }
             return `
-        <button class="btn btn-sm btn-primary me-1" onclick="changeData(${row.id})" title="Change Password">
-            <i class="bi bi-key"></i>
-        </button>
-        <button class="btn btn-sm btn-danger me-1" onclick="disableData(${row.id})" title="Disable Account">
-            <i class="bi bi-person-x"></i>
-        </button>
-    `;
+                <button class="btn btn-sm btn-primary me-1" onclick="changeData(${row.id})" title="Change Password">
+                    <i class="bi bi-key"></i>
+                </button>
+                <button class="btn btn-sm btn-danger me-1" onclick="disableData(${row.id})" title="Disable Account">
+                    <i class="bi bi-person-x"></i>
+                </button>
+            `;
         }
 
         function changeData(id) {
@@ -109,21 +109,34 @@
         }
 
         function disableData(id) {
-            $.ajax({
-                method: 'PUT',
-                url: `/users/${id}/changeStatus`,
-                dataType: 'JSON',
-                cache: false,
-                success: function(response) {
-                    $('#table').bootstrapTable('refresh');
-                    toastr.success(response.message);
-                },
-                error: function(xhr) {
-                    let message = 'Error deleting user.';
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        message = xhr.responseJSON.message;
-                    }
-                    toastr.error(message);
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This will disable the user's account.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Disable',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        method: 'PUT',
+                        url: `/users/${id}/changeStatus`,
+                        dataType: 'JSON',
+                        cache: false,
+                        success: function(response) {
+                            $('#table').bootstrapTable('refresh');
+                            toastr.success(response.message);
+                        },
+                        error: function(xhr) {
+                            let message = 'Error deleting user.';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                message = xhr.responseJSON.message;
+                            }
+                            toastr.error(message);
+                        }
+                    });
                 }
             });
         }
@@ -184,44 +197,57 @@
             $('#changePasswordForm').submit(function(event) {
                 event.preventDefault();
 
-                $.ajax({
-                    method: 'PUT',
-                    url: `/users/${dataId}/changePassword`,
-                    data: $('#changePasswordForm').serialize(),
-                    dataType: 'JSON',
-                    cache: false,
-                    success: function(response) {
-                        $('#changePasswordModal').modal('hide');
-                        $('#table').bootstrapTable('refresh');
-                        $('#addForm').trigger('reset');
-                        toastr.success(response.message);
-                    },
-                    error: function(xhr) {
-                        let response;
-                        try {
-                            response = JSON.parse(xhr.responseText);
-                            toastr.error('Error updating user: ' + (response
-                                .message || 'An unknown error occurred.'));
-                            if (response.errors) {
-                                for (const field in response.errors) {
-                                    const messages = response.errors[field];
-                                    if (messages.length > 0) {
-                                        const input = $(
-                                            `#changePasswordForm [name="${field}"]`
-                                        );
-                                        input.addClass('is-invalid');
-                                        input.closest('.form-group').find(
-                                            'span.invalid-feedback').remove();
-                                        const error = $(
-                                            '<span class="invalid-feedback"></span>'
-                                        ).text(messages[0]);
-                                        input.closest('.form-group').append(error);
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "Do you want to update the user's password?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Update',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            method: 'PUT',
+                            url: `/users/${dataId}/changePassword`,
+                            data: $('#changePasswordForm').serialize(),
+                            dataType: 'JSON',
+                            cache: false,
+                            success: function(response) {
+                                $('#changePasswordModal').modal('hide');
+                                $('#table').bootstrapTable('refresh');
+                                $('#addForm').trigger('reset');
+                                toastr.success(response.message);
+                            },
+                            error: function(xhr) {
+                                let response;
+                                try {
+                                    response = JSON.parse(xhr.responseText);
+                                    toastr.error('Error updating user: ' + (response
+                                        .message || 'An unknown error occurred.'));
+                                    if (response.errors) {
+                                        for (const field in response.errors) {
+                                            const messages = response.errors[field];
+                                            if (messages.length > 0) {
+                                                const input = $(
+                                                    `#changePasswordForm [name="${field}"]`
+                                                );
+                                                input.addClass('is-invalid');
+                                                input.closest('.form-group').find(
+                                                    'span.invalid-feedback').remove();
+                                                const error = $(
+                                                    '<span class="invalid-feedback"></span>'
+                                                ).text(messages[0]);
+                                                input.closest('.form-group').append(error);
+                                            }
+                                        }
                                     }
+                                } catch (e) {
+                                    toastr.error('Error parsing server response.');
                                 }
                             }
-                        } catch (e) {
-                            toastr.error('Error parsing server response.');
-                        }
+                        });
                     }
                 });
             });

@@ -127,7 +127,7 @@ class AdminController extends Controller
 
         // Get last reading if exists, else use initial
         $previousReading = $meter->meterReadings()->latest('reading_date')->first();
-        $previous = $previousReading ? $previousReading->present_reading : $meter->initial_reading;
+        $previous = $previousReading ? $previousReading->present_reading : 0;
 
         return view('admin.concessionaire_meter_reading', compact('meter', 'previous'));
     }

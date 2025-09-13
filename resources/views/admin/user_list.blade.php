@@ -50,7 +50,7 @@
                             <input type="text" class="form-control" id="first_name" name="first_name" required>
                         </div>
                         <div class="col-lg-6">
-                            <label for="middle_name">Middle Name: <span class="text-danger">*</span></label>
+                            <label for="middle_name">Middle Name: <span class="text-danger"></span></label>
                             <input type="text" class="form-control" id="middle_name" name="middle_name">
                         </div>
                         <div class="col-lg-6">
@@ -58,7 +58,7 @@
                             <input type="text" class="form-control" id="last_name" name="last_name" required>
                         </div>
                         <div class="col-lg-6">
-                            <label for="extension_name">Extension Name: <span class="text-danger">*</span></label>
+                            <label for="extension_name">Extension Name: <span class="text-danger"></span></label>
                             <input type="text" class="form-control" id="extension_name" name="extension_name">
                         </div>
                         <div class="col-lg-6">
@@ -108,7 +108,7 @@
                             <input type="text" class="form-control" id="first_name" name="first_name" required>
                         </div>
                         <div class="col-lg-6">
-                            <label for="middle_name">Middle Name: <span class="text-danger">*</span></label>
+                            <label for="middle_name">Middle Name: <span class="text-danger"></span></label>
                             <input type="text" class="form-control" id="middle_name" name="middle_name">
                         </div>
                         <div class="col-lg-6">
@@ -116,7 +116,7 @@
                             <input type="text" class="form-control" id="last_name" name="last_name" required>
                         </div>
                         <div class="col-lg-6">
-                            <label for="extension_name">Extension Name: <span class="text-danger">*</span></label>
+                            <label for="extension_name">Extension Name: <span class="text-danger"></span></label>
                             <input type="text" class="form-control" id="extension_name" name="extension_name">
                         </div>
                         <div class="col-lg-6">
@@ -157,9 +157,6 @@
                 <button class="btn btn-sm btn-primary me-1" onclick="editData(${row.id})" title="Edit">
                     <i class="bi bi-pencil"></i>
                 </button>
-                <button class="btn btn-sm btn-danger me-1" onclick="deleteData(${row.id})" title="Delete">
-                    <i class="bi bi-trash"></i>
-                </button>
             `;
         }
 
@@ -190,7 +187,16 @@
         }
 
         function deleteData(id) {
-            $.ajax({
+            Swal.fire({
+            title: 'Delete User?',
+            text: "Are you sure you want to delete this user?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel'
+            }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
                 method: 'DELETE',
                 url: `/users/${id}`,
                 dataType: 'JSON',
@@ -202,10 +208,12 @@
                 error: function(xhr) {
                     let message = 'Error deleting user.';
                     if (xhr.responseJSON && xhr.responseJSON.message) {
-                        message = xhr.responseJSON.message;
+                    message = xhr.responseJSON.message;
                     }
                     toastr.error(message);
                 }
+                });
+            }
             });
         }
 
@@ -265,44 +273,55 @@
             $('#addForm').submit(function(event) {
                 event.preventDefault();
 
-                $.ajax({
-                    method: 'POST',
-                    url: '{{ route('users.store') }}',
-                    data: $('#addForm').serialize(),
-                    dataType: 'JSON',
-                    cache: false,
-                    success: function(response) {
-                        $('#addModal').modal('hide');
-                        $('#table').bootstrapTable('refresh');
-                        $('#addForm').trigger('reset');
-                        toastr.success(response.message);
-                    },
-                    error: function(xhr) {
-                        let response;
-                        try {
-                            response = JSON.parse(xhr.responseText);
-                            toastr.error('Error adding user: ' + (response
-                                .message || 'An unknown error occurred.'));
-                            if (response.errors) {
-                                for (const field in response.errors) {
-                                    const messages = response.errors[field];
-                                    if (messages.length > 0) {
-                                        const input = $(
-                                            `#addForm [name="${field}"]`
-                                        );
-                                        input.addClass('is-invalid');
-                                        input.closest('.form-group').find(
-                                            'span.invalid-feedback').remove();
-                                        const error = $(
-                                            '<span class="invalid-feedback"></span>'
-                                        ).text(messages[0]);
-                                        input.closest('.form-group').append(error);
+                Swal.fire({
+                    title: 'Add New User?',
+                    text: "Are you sure you want to add this user?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Save',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            method: 'POST',
+                            url: '{{ route('users.store') }}',
+                            data: $('#addForm').serialize(),
+                            dataType: 'JSON',
+                            cache: false,
+                            success: function(response) {
+                                $('#addModal').modal('hide');
+                                $('#table').bootstrapTable('refresh');
+                                $('#addForm').trigger('reset');
+                                toastr.success(response.message);
+                            },
+                            error: function(xhr) {
+                                let response;
+                                try {
+                                    response = JSON.parse(xhr.responseText);
+                                    toastr.error('Error adding user: ' + (response
+                                        .message || 'An unknown error occurred.'));
+                                    if (response.errors) {
+                                        for (const field in response.errors) {
+                                            const messages = response.errors[field];
+                                            if (messages.length > 0) {
+                                                const input = $(
+                                                    `#addForm [name="${field}"]`
+                                                );
+                                                input.addClass('is-invalid');
+                                                input.closest('.form-group').find(
+                                                    'span.invalid-feedback').remove();
+                                                const error = $(
+                                                    '<span class="invalid-feedback"></span>'
+                                                ).text(messages[0]);
+                                                input.closest('.form-group').append(error);
+                                            }
+                                        }
                                     }
+                                } catch (e) {
+                                    toastr.error('Error parsing server response.');
                                 }
                             }
-                        } catch (e) {
-                            toastr.error('Error parsing server response.');
-                        }
+                        });
                     }
                 });
             });
@@ -310,44 +329,55 @@
             $('#updateForm').submit(function(event) {
                 event.preventDefault();
 
-                $.ajax({
-                    method: 'PUT',
-                    url: `/users/${dataId}`,
-                    data: $('#updateForm').serialize(),
-                    dataType: 'JSON',
-                    cache: false,
-                    success: function(response) {
-                        $('#updateModal').modal('hide');
-                        $('#table').bootstrapTable('refresh');
-                        $('#updateForm').trigger('reset');
-                        toastr.success(response.message);
-                    },
-                    error: function(xhr) {
-                        let response;
-                        try {
-                            response = JSON.parse(xhr.responseText);
-                            toastr.error('Error updating user: ' + (response
-                                .message || 'An unknown error occurred.'));
-                            if (response.errors) {
-                                for (const field in response.errors) {
-                                    const messages = response.errors[field];
-                                    if (messages.length > 0) {
-                                        const input = $(
-                                            `#updateForm [name="${field}"]`
-                                        );
-                                        input.addClass('is-invalid');
-                                        input.closest('.form-group').find(
-                                            'span.invalid-feedback').remove();
-                                        const error = $(
-                                            '<span class="invalid-feedback"></span>'
-                                        ).text(messages[0]);
-                                        input.closest('.form-group').append(error);
+                Swal.fire({
+                    title: 'Update User?',
+                    text: "Are you sure you want to update this user?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Save',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            method: 'PUT',
+                            url: `/users/${dataId}`,
+                            data: $('#updateForm').serialize(),
+                            dataType: 'JSON',
+                            cache: false,
+                            success: function(response) {
+                                $('#updateModal').modal('hide');
+                                $('#table').bootstrapTable('refresh');
+                                $('#updateForm').trigger('reset');
+                                toastr.success(response.message);
+                            },
+                            error: function(xhr) {
+                                let response;
+                                try {
+                                    response = JSON.parse(xhr.responseText);
+                                    toastr.error('Error updating user: ' + (response
+                                        .message || 'An unknown error occurred.'));
+                                    if (response.errors) {
+                                        for (const field in response.errors) {
+                                            const messages = response.errors[field];
+                                            if (messages.length > 0) {
+                                                const input = $(
+                                                    `#updateForm [name="${field}"]`
+                                                );
+                                                input.addClass('is-invalid');
+                                                input.closest('.form-group').find(
+                                                    'span.invalid-feedback').remove();
+                                                const error = $(
+                                                    '<span class="invalid-feedback"></span>'
+                                                ).text(messages[0]);
+                                                input.closest('.form-group').append(error);
+                                            }
+                                        }
                                     }
+                                } catch (e) {
+                                    toastr.error('Error parsing server response.');
                                 }
                             }
-                        } catch (e) {
-                            toastr.error('Error parsing server response.');
-                        }
+                        });
                     }
                 });
             });

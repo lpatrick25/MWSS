@@ -14,7 +14,8 @@ class Billing extends Model
         'concessionaire_id',
         'meter_reading_id',
         'billing_month',
-        'due_date',
+        'payment_deadline',
+        'disconnection_date',
         'amount_due',
         'status',
     ];
