@@ -62,9 +62,9 @@ class MeterController extends Controller
         return $this->success(null, 'Meter deleted');
     }
 
-    public function updateStatus(Meter $meter): JsonResponse
+    public function changeStatus(Meter $meter): JsonResponse
     {
-        $meter = $this->meterService->updateStatus($meter->id);
+        $meter = $this->meterService->changeStatus($meter->id);
         $meter->load('concessionaire');
         return $this->success(new MeterResource($meter), 'Meter status updated');
     }

@@ -26,4 +26,18 @@ class ConcessionaireServices
         $concessionaire->update($data);
         return $concessionaire;
     }
+
+    public function changeStatus(int $id): Concessionaire
+    {
+        $concessionaire = Concessionaire::findOrFail($id);
+
+        if ($concessionaire->status === 'Active') {
+            $concessionaire->status = 'Inactive';
+        } else {
+             $concessionaire->status = 'Active';
+        }
+
+        $concessionaire->save();
+        return $concessionaire;
+    }
 }

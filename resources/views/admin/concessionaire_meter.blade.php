@@ -30,7 +30,7 @@
                             <th data-field="concessionaire.full_name">Concessionaire</th>
                             <th data-field="installation_date">Installation Date</th>
                             <th data-field="service_address" data-formatter="getServiceFormatter">Service Address</th>
-                            <th data-field="initial_reading">Initial Reading</th>
+                            <th data-field="status" data-formatter="getStatusFormatter">Status</th>
                             <th data-field="action" data-formatter="getActionFormatter">Action</th>
                         </tr>
                     </thead>
@@ -43,6 +43,7 @@
             <form id="addForm" class="modal-content">
                 <div class="modal-header">
                     <h3 class="modal-title">Add New Concessionaire</h3>
+                    <button type="button" class="close text-dark" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -51,7 +52,7 @@
                             <input type="text" class="form-control" id="meter_number" name="meter_number" required>
                         </div>
                         <div class="col-lg-12 mb-2">
-                            <label for="concessionaire_id">Service Address: <span class="text-danger">*</span></label>
+                            <label for="concessionaire_id">Consumer Name: <span class="text-danger">*</span></label>
                             <select type="text" class="form-control" id="concessionaire_id" name="concessionaire_id">
                                 @foreach ($concessionaires as $concessionaire)
                                     <option value="{{ $concessionaire->id }}">{{ $concessionaire->full_name }}</option>
@@ -99,15 +100,10 @@
                                 <option value="Villa Imelda">Brgy. Villa Imelda, MacArthur, Leyte</option>
                             </select>
                         </div>
-                        <div class="col-lg-12 mb-2">
-                            <label for="initial_reading">Initial Reading: <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="initial_reading" name="initial_reading"
-                                required>
-                        </div>
                     </div>
                 </div>
                 <div class="modal-footer text-right">
-                    <button class="btn btn-md btn-primary">Submit</button>
+                    <button class="btn btn-md btn-primary">Save</button>
                     <button class="btn btn-md btn-danger" data-dismiss="modal">Cancel</button>
                 </div>
             </form>
@@ -118,6 +114,7 @@
             <form id="updateForm" class="modal-content">
                 <div class="modal-header">
                     <h3 class="modal-title">Update Concessionaire</h3>
+                    <button type="button" class="close text-dark" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -126,7 +123,7 @@
                             <input type="text" class="form-control" id="meter_number" name="meter_number" required>
                         </div>
                         <div class="col-lg-12 mb-2">
-                            <label for="concessionaire_id">Service Address: <span class="text-danger">*</span></label>
+                            <label for="concessionaire_id">Consumer Name: <span class="text-danger">*</span></label>
                             <select type="text" class="form-control" id="concessionaire_id" name="concessionaire_id">
                                 @foreach ($concessionaires as $concessionaire)
                                     <option value="{{ $concessionaire->id }}">{{ $concessionaire->full_name }}</option>
@@ -174,15 +171,10 @@
                                 <option value="Villa Imelda">Brgy. Villa Imelda, MacArthur, Leyte</option>
                             </select>
                         </div>
-                        <div class="col-lg-12 mb-2">
-                            <label for="initial_reading">Initial Reading: <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="initial_reading" name="initial_reading"
-                                required>
-                        </div>
                     </div>
                 </div>
                 <div class="modal-footer text-right">
-                    <button class="btn btn-md btn-primary">Submit</button>
+                    <button class="btn btn-md btn-primary">Save</button>
                     <button class="btn btn-md btn-danger" data-dismiss="modal">Cancel</button>
                 </div>
             </form>
@@ -213,8 +205,11 @@
                 <button class="btn btn-sm btn-primary me-1" onclick="editData(${row.id})" title="Edit">
                     <i class="bi bi-pencil"></i>
                 </button>
-                <button class="btn btn-sm btn-danger me-1" onclick="deleteData(${row.id})" title="Delete">
-                    <i class="bi bi-trash"></i>
+                <button class="btn btn-sm btn-success me-1" onclick="viewMeterReading('${row.id}')" title="View Meter">
+                    <i class="bi bi-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-danger me-1" onclick="statusData(${row.id})" title="Status">
+                    <i class="bi bi-person-x"></i>
                 </button>
             `;
         }
@@ -232,7 +227,6 @@
                     $('#updateForm').find('input[id=meter_number]').val(data.meter_number);
                     $('#updateForm').find('input[id=installation_date]').val(data.installation_date);
                     $('#updateForm').find('select[id=service_address]').val(data.service_address);
-                    $('#updateForm').find('input[id=initial_reading]').val(data.initial_reading);
                     $('#updateModal').modal({
                         backdrop: 'static',
                         keyboard: false
@@ -245,8 +239,55 @@
             });
         }
 
+        function viewMeterReading(meterId)
+        {
+            location.href = `/admin/concessionaireMeterBill/${meterId}/reading`;
+        }
+
+        function statusData(id) {
+            Swal.fire({
+            title: 'Are you sure?',
+            text: "Do you want to change the status of this meter?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Change'
+            }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                method: 'PUT',
+                url: `/meters/${id}/changeStatus`,
+                dataType: 'JSON',
+                cache: false,
+                success: function(response) {
+                    $('#table').bootstrapTable('refresh');
+                    toastr.success(response.message);
+                },
+                error: function(xhr) {
+                    let message = 'Error changing status.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                    }
+                    toastr.error(message);
+                }
+                });
+            }
+            });
+        }
+
         function deleteData(id) {
-            $.ajax({
+            Swal.fire({
+            title: 'Are you sure?',
+            text: "This action cannot be undone!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Delete'
+            }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
                 method: 'DELETE',
                 url: `/meters/${id}`,
                 dataType: 'JSON',
@@ -258,10 +299,12 @@
                 error: function(xhr) {
                     let message = 'Error deleting concessionaire.';
                     if (xhr.responseJSON && xhr.responseJSON.message) {
-                        message = xhr.responseJSON.message;
+                    message = xhr.responseJSON.message;
                     }
                     toastr.error(message);
                 }
+                });
+            }
             });
         }
 
@@ -321,44 +364,56 @@
             $('#addForm').submit(function(event) {
                 event.preventDefault();
 
-                $.ajax({
-                    method: 'POST',
-                    url: '{{ route('meters.store') }}',
-                    data: $('#addForm').serialize(),
-                    dataType: 'JSON',
-                    cache: false,
-                    success: function(response) {
-                        $('#addModal').modal('hide');
-                        $('#table').bootstrapTable('refresh');
-                        $('#addForm').trigger('reset');
-                        toastr.success(response.message);
-                    },
-                    error: function(xhr) {
-                        let response;
-                        try {
-                            response = JSON.parse(xhr.responseText);
-                            toastr.error('Error adding concessionaire: ' + (response
-                                .message || 'An unknown error occurred.'));
-                            if (response.errors) {
-                                for (const field in response.errors) {
-                                    const messages = response.errors[field];
-                                    if (messages.length > 0) {
-                                        const input = $(
-                                            `#addForm [name="${field}"]`
-                                        );
-                                        input.addClass('is-invalid');
-                                        input.closest('.form-group').find(
-                                            'span.invalid-feedback').remove();
-                                        const error = $(
-                                            '<span class="invalid-feedback"></span>'
-                                        ).text(messages[0]);
-                                        input.closest('.form-group').append(error);
+                Swal.fire({
+                    title: 'Add New Meter?',
+                    text: "Are you sure you want to add this meter?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Save'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            method: 'POST',
+                            url: '{{ route('meters.store') }}',
+                            data: $('#addForm').serialize(),
+                            dataType: 'JSON',
+                            cache: false,
+                            success: function(response) {
+                                $('#addModal').modal('hide');
+                                $('#table').bootstrapTable('refresh');
+                                $('#addForm').trigger('reset');
+                                toastr.success(response.message);
+                            },
+                            error: function(xhr) {
+                                let response;
+                                try {
+                                    response = JSON.parse(xhr.responseText);
+                                    toastr.error('Error adding concessionaire: ' + (response
+                                        .message || 'An unknown error occurred.'));
+                                    if (response.errors) {
+                                        for (const field in response.errors) {
+                                            const messages = response.errors[field];
+                                            if (messages.length > 0) {
+                                                const input = $(
+                                                    `#addForm [name="${field}"]`
+                                                );
+                                                input.addClass('is-invalid');
+                                                input.closest('.form-group').find(
+                                                    'span.invalid-feedback').remove();
+                                                const error = $(
+                                                    '<span class="invalid-feedback"></span>'
+                                                ).text(messages[0]);
+                                                input.closest('.form-group').append(error);
+                                            }
+                                        }
                                     }
+                                } catch (e) {
+                                    toastr.error('Error parsing server response.');
                                 }
                             }
-                        } catch (e) {
-                            toastr.error('Error parsing server response.');
-                        }
+                        });
                     }
                 });
             });
@@ -366,44 +421,56 @@
             $('#updateForm').submit(function(event) {
                 event.preventDefault();
 
-                $.ajax({
-                    method: 'PUT',
-                    url: `/meters/${dataId}`,
-                    data: $('#updateForm').serialize(),
-                    dataType: 'JSON',
-                    cache: false,
-                    success: function(response) {
-                        $('#updateModal').modal('hide');
-                        $('#table').bootstrapTable('refresh');
-                        $('#updateForm').trigger('reset');
-                        toastr.success(response.message);
-                    },
-                    error: function(xhr) {
-                        let response;
-                        try {
-                            response = JSON.parse(xhr.responseText);
-                            toastr.error('Error updating concessionaire: ' + (response
-                                .message || 'An unknown error occurred.'));
-                            if (response.errors) {
-                                for (const field in response.errors) {
-                                    const messages = response.errors[field];
-                                    if (messages.length > 0) {
-                                        const input = $(
-                                            `#updateForm [name="${field}"]`
-                                        );
-                                        input.addClass('is-invalid');
-                                        input.closest('.form-group').find(
-                                            'span.invalid-feedback').remove();
-                                        const error = $(
-                                            '<span class="invalid-feedback"></span>'
-                                        ).text(messages[0]);
-                                        input.closest('.form-group').append(error);
+                Swal.fire({
+                    title: 'Update Meter?',
+                    text: "Are you sure you want to update this meter?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Update'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            method: 'PUT',
+                            url: `/meters/${dataId}`,
+                            data: $('#updateForm').serialize(),
+                            dataType: 'JSON',
+                            cache: false,
+                            success: function(response) {
+                                $('#updateModal').modal('hide');
+                                $('#table').bootstrapTable('refresh');
+                                $('#updateForm').trigger('reset');
+                                toastr.success(response.message);
+                            },
+                            error: function(xhr) {
+                                let response;
+                                try {
+                                    response = JSON.parse(xhr.responseText);
+                                    toastr.error('Error updating concessionaire: ' + (response
+                                        .message || 'An unknown error occurred.'));
+                                    if (response.errors) {
+                                        for (const field in response.errors) {
+                                            const messages = response.errors[field];
+                                            if (messages.length > 0) {
+                                                const input = $(
+                                                    `#updateForm [name="${field}"]`
+                                                );
+                                                input.addClass('is-invalid');
+                                                input.closest('.form-group').find(
+                                                    'span.invalid-feedback').remove();
+                                                const error = $(
+                                                    '<span class="invalid-feedback"></span>'
+                                                ).text(messages[0]);
+                                                input.closest('.form-group').append(error);
+                                            }
+                                        }
                                     }
+                                } catch (e) {
+                                    toastr.error('Error parsing server response.');
                                 }
                             }
-                        } catch (e) {
-                            toastr.error('Error parsing server response.');
-                        }
+                        });
                     }
                 });
             });

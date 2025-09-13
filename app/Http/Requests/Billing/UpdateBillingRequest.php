@@ -18,7 +18,8 @@ class UpdateBillingRequest extends FormRequest
             'concessionaire_id' => 'sometimes|required|exists:concessionaires,id',
             'meter_reading_id' => 'sometimes|required|exists:meter_readings,id',
             'billing_month' => 'sometimes|required|string|max:255',
-            'due_date' => 'sometimes|required|date',
+            'payment_deadline' => 'sometimes|required|date',
+            'disconnection_date' => 'sometimes|required|date|after_or_equal:payment_deadline',
             'amount_due' => 'sometimes|required|numeric|min:0',
             'status' => 'sometimes|required|in:Pending,Paid,Overdue',
         ];

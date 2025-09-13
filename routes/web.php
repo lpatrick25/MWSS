@@ -70,6 +70,7 @@ Route::get('/concessionaires/{concessionaire}', [ConcessionaireController::class
 Route::post('/concessionaires', [ConcessionaireController::class, 'store'])->name('concessionaires.store');
 Route::put('/concessionaires/{concessionaire}', [ConcessionaireController::class, 'update'])->name('concessionaires.update');
 Route::delete('/concessionaires/{concessionaire}', [ConcessionaireController::class, 'destroy'])->name('concessionaires.destroy');
+Route::put('/concessionaires/{concessionaire}/changeStatus', [ConcessionaireController::class, 'changeStatus'])->name('concessionaires.changeStatus');
 
 // Meter Routes
 Route::get('/meters', [MeterController::class, 'index'])->name('meters.index');
@@ -77,7 +78,7 @@ Route::get('/meters/{meter}', [MeterController::class, 'show'])->name('meters.sh
 Route::post('/meters', [MeterController::class, 'store'])->name('meters.store');
 Route::put('/meters/{meter}', [MeterController::class, 'update'])->name('meters.update');
 Route::delete('/meters/{meter}', [MeterController::class, 'destroy'])->name('meters.destroy');
-Route::put('/meters/{meter}/status', [MeterController::class, 'updateStatus'])->name('meters.updateStatus');
+Route::put('/meters/{meter}/changeStatus', [MeterController::class, 'changeStatus'])->name('meters.changeStatus');
 
 // Meter Reading Routes
 Route::get('/meter-readings', [MeterReadingController::class, 'index'])->name('meter-readings.index');

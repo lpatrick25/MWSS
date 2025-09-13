@@ -14,7 +14,6 @@ class Meter extends Model
         'meter_number',
         'installation_date',
         'service_address',
-        'initial_reading',
         'status',
     ];
 

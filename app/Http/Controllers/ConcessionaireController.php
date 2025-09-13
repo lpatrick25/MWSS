@@ -57,4 +57,10 @@ class ConcessionaireController extends Controller
         $concessionaire->delete();
         return $this->success(null, 'Concessionaire deleted');
     }
+
+    public function changeStatus(Concessionaire $concessionaire)
+    {
+        $concessionaire = $this->concessionaireService->changeStatus($concessionaire->id);
+        return $this->success(new ConcessionaireResource($concessionaire), 'Concessionaire status updated');
+    }
 }

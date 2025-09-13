@@ -22,7 +22,8 @@ class StoreReadingBillingRequest extends FormRequest
 
             'concessionaire_id' => 'required|exists:concessionaires,id',
             'billing_month' => 'required|string|max:255',
-            'due_date' => 'required|date',
+            'payment_deadline' => 'required|date',
+            'disconnection_date' => 'required|date|after_or_equal:payment_deadline',
             'amount_due' => 'required|numeric|min:0',
             'status' => 'required|in:Pending,Paid,Overdue',
         ];

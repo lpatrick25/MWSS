@@ -27,7 +27,7 @@ class MeterServices
         return $meter;
     }
 
-    public function updateStatus(int $id): Meter
+    public function changeStatus(int $id): Meter
     {
         $meter = Meter::findOrFail($id);
         if ($meter->status === 'Inactive') {
